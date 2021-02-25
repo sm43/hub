@@ -133,8 +133,8 @@ kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/api/golang-db-test.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/api/pipeline.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/ui/pipeline.yaml
 
-[[ ! -z ${oc} ]] &&
-    oc adm policy add-scc-to-user privileged system:serviceaccount:${TARGET_NAMESPACE}:quay-login
+# [[ ! -z ${oc} ]] &&
+#     oc adm policy add-scc-to-user privileged system:serviceaccount:${TARGET_NAMESPACE}:quay-login
 
 cat <<EOF | kubectl -n ${TARGET_NAMESPACE} create -f-
 apiVersion: tekton.dev/v1beta1
@@ -159,7 +159,7 @@ spec:
     - name: HUB_NAMESPACE
       value: hub
     - name: K8S_VARIANT #it will accept either openshift or kubernetes
-      value: openshift
+      value: kubernetes
   workspaces:
     - name: shared-workspace
       volumeClaimTemplate:
@@ -192,7 +192,7 @@ spec:
     - name: HUB_NAMESPACE
       value: hub
     - name: K8S_VARIANT #it will accept either openshift or kubernetes
-      value: openshift
+      value: kubernetes
   workspaces:
     - name: shared-workspace
       volumeClaimTemplate:
