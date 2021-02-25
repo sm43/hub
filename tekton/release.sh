@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 RELEASE_VERSION="${1}"
-COMMITS="${2}"
 
-UPSTREAM_REMOTE=upstream
+UPSTREAM_REMOTE="upstream"
 MASTER_BRANCH="master"
-TARGET_NAMESPACE="default"
+TARGET_NAMESPACE="hub-ci"
 BINARIES="kubectl git"
-HUB_NAMESPACE="default"
+HUB_NAMESPACE="hub"
 
 set -e
 
@@ -24,22 +23,24 @@ kubectl get pipelineresource 2>/dev/null >/dev/null || {
     exit 1
 }
 
-#[[ -z ${RELEASE_VERSION} ]] && {
-#    read -e -p "Enter a target release (i.e: v0.1.2): " RELEASE_VERSION
-#    [[ -z ${RELEASE_VERSION} ]] && { echo "no target release"; exit 1 ;}
-#}
+[[ -z ${RELEASE_VERSION} ]] && {
+   read -e -p "Enter a target release (i.e: v0.1.2): " RELEASE_VERSION
+   [[ -z ${RELEASE_VERSION} ]] && { echo "no target release"; exit 1 ;}
+}
+
+[[ ${RELEASE_VERSION} =~ v[0-9]+\.[0-9]*\.[0-9]+ ]] || { echo "invalid version provided, need to match v\d+\.\d+\.\d+"; exit 1 ;}
+
 
 cd ${GOPATH}/src/github.com/tektoncd/hub
 
-#[[ -n $(git status --porcelain 2>&1) ]] && {
-#    echo "We have detected some changes in your repo"
-#    echo "Stash them before executing this script"
-#    exit 1
-#}
+[[ -n $(git status --porcelain 2>&1) ]] && {
+   echo "We have detected some changes in your repo"
+   echo "Stash them before executing this script"
+   exit 1
+}
 
-#git checkout ${MASTER_BRANCH}
-#git reset --hard ${UPSTREAM_REMOTE}/${MASTER_BRANCH}
-#git checkout -B release-${RELEASE_VERSION}  ${MASTER_BRANCH} >/dev/null
+git checkout ${MASTER_BRANCH}
+git reset --hard ${UPSTREAM_REMOTE}/${MASTER_BRANCH}
 
 kubectl create namespace ${HUB_NAMESPACE} 2>/dev/null || true
 
@@ -55,7 +56,7 @@ kubectl -n ${HUB_NAMESPACE} get secret db 2>/dev/null >/dev/null || {
             --from-literal=POSTGRES_PASSWORD=${DB_PASSWORD} \
             --from-literal=POSTGRES_PORT="5432"
         
-        kubectl label secret db app=db 
+        kubectl -n ${HUB_NAMESPACE} label secret db app=db 
 }
 
 kubectl -n ${HUB_NAMESPACE} get secret api 2>/dev/null >/dev/null || {
@@ -73,13 +74,13 @@ kubectl -n ${HUB_NAMESPACE} get secret api 2>/dev/null >/dev/null || {
             --from-literal=ACCESS_JWT_EXPIRES_IN=${ACCESS_JWT_EXPIRES_IN} \
             --from-literal=REFRESH_JWT_EXPIRES_IN=${REFRESH_JWT_EXPIRES_IN}
         
-        kubectl label secret api app=api 
+        kubectl -n ${HUB_NAMESPACE} label secret api app=api 
 
         kubectl -n ${HUB_NAMESPACE} create cm ui \
             --from-literal=GH_CLIENT_ID=${GH_CLIENT_ID} \
             --from-literal=API_URL="https://api.hub.tekton.dev" 
         
-        kubectl label cm ui app=ui         
+        kubectl -n ${HUB_NAMESPACE} label cm ui app=ui         
 }
 
 kubectl -n ${HUB_NAMESPACE} get cm api 2>/dev/null >/dev/null || {
@@ -94,7 +95,7 @@ kubectl -n ${HUB_NAMESPACE} get cm api 2>/dev/null >/dev/null || {
         kubectl -n ${HUB_NAMESPACE} create cm api \
             --from-literal=CONFIG_FILE_URL=${HUB_CONFIG} 
         
-        kubectl label cm api app=api 
+        kubectl -n ${HUB_NAMESPACE} label cm api app=api 
 }
 
 kubectl create namespace ${TARGET_NAMESPACE} 2>/dev/null || true
