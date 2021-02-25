@@ -1,0 +1,164 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ui-pipeline
+spec:
+  params:
+    - name: HUB_REPO
+    - name: REVISION
+    - name: IMAGE
+    - name: TAG
+    - name: HUB_NAMESPACE
+    - name: K8S_VARIANT
+  workspaces:
+    - name: shared-workspace
+    - name: kubeconfig-dir
+      optional: true
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: $(params.HUB_REPO)
+        - name: subdirectory
+          value: ""
+        - name: deleteExisting
+          value: "true"
+        - name: revision
+          value: $(params.REVISION)
+    - name: install-dependencies
+      taskRef:
+        name: npm
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: PATH_CONTEXT
+          value: "ui"
+        - name: ARGS
+          value:
+            - clean-install
+      runAfter:
+        - fetch-repository
+    # - name: run-lint
+    #   taskRef:
+    #     name: npm
+    #   workspaces:
+    #     - name: source
+    #       workspace: shared-workspace
+    #   params:
+    #     - name: PATH_CONTEXT
+    #       value: "ui"
+    #     - name: ARGS
+    #       value:
+    #         - run
+    #         - lint
+    #   runAfter:
+    #     - install-dependencies
+    - name: build-test
+      taskRef:
+        name: npm
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: PATH_CONTEXT
+          value: "ui"
+        - name: ARGS
+          value:
+            - run
+            - build
+      runAfter:
+        - install-dependencies #run-lint
+    - name: unit-test
+      taskRef:
+        name: npm
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: PATH_CONTEXT
+          value: "ui"
+        - name: ARGS
+          value:
+            - run
+            - test
+      runAfter:
+        - install-dependencies #run-lint
+    - name: build-push-image
+      taskRef:
+        name: buildah
+      runAfter:
+        - unit-test
+        - build-test
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: IMAGE
+          value: $(params.IMAGE):$(params.TAG)
+        - name: CONTEXT
+          value: "ui"
+        - name: FORMAT
+          value: "docker"
+    - name: check-ui-deployment
+      taskRef:
+        name: kubernetes-actions
+      params:
+        - name: script
+          value: |
+            kubectl describe deployment ui -n "$(params.HUB_NAMESPACE)" >/dev/null 2>/dev/null
+            if [[ $? -eq 0 ]]; then
+              printf yes | tee /tekton/results/output-result
+            else
+              printf no | tee /tekton/results/output-result
+            fi
+      runAfter:
+        - build-push-image
+      workspaces:
+        - name: kubeconfig-dir
+          workspace: kubeconfig-dir
+    - name: patch-ui-image
+      taskRef:
+        name: kubernetes-actions
+      params:
+        - name: script
+          value: |
+            kubectl patch deployment ui --patch='{"spec":{"template":{"spec":{
+              "containers":[{
+                "name": "ui",
+                "image": "$(params.IMAGE):$(params.TAG)"
+              }]
+            }}}}' -n $(params.HUB_NAMESPACE)
+      when:
+        - input: "$(tasks.check-ui-deployment.results.output-result)"
+          operator: in
+          values: ["yes"]
+      workspaces:
+        - name: kubeconfig-dir
+          workspace: kubeconfig-dir
+    - name: create-deployment
+      taskRef:
+        name: kubernetes-actions
+      runAfter:
+        - check-ui-deployment
+      params:
+        - name: script
+          value: |
+            kubectl -n $(params.HUB_NAMESPACE) apply -f <(sed "s@image:.*@image: $(params.IMAGE):$(params.TAG)@" config/03-ui/31-ui-deployment.yaml)
+            kubectl -n $(params.HUB_NAMESPACE) apply -f config/03-ui/32-ui-service.yaml
+            [[ "$(params.K8S_VARIANT)" == "openshift" ]] && \
+            kubectl -n $(params.HUB_NAMESPACE) apply -f config/04-openshift/41-ui-route.yaml
+      workspaces:
+        - name: manifest-dir
+          workspace: shared-workspace
+        - name: kubeconfig-dir
+          workspace: kubeconfig-dir
+      when:
+        - input: "$(tasks.check-ui-deployment.results.output-result)"
+          operator: in
+          values: ["no"]

@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ui
+spec:
+  serviceAccountName: quay-login
+  pipelineRef:
+    name: ui-pipeline
+  params:
+    - name: HUB_REPO
+      value: https://github.com/sm43/hub
+    - name: REVISION
+      value: tekton-ci
+    - name: IMAGE
+      value: quay.io/sm43/ui
+    - name: TAG
+      value: v1
+    - name: HUB_NAMESPACE
+      value: hub
+    - name: K8S_VARIANT #it will accept either openshift or kubernetes
+      value: openshift
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
+    - name: kubeconfig-dir
+      configMap:
+        name: kubeconfig
+    - name: token
+      configMap:
+        name: tokens-configmap
