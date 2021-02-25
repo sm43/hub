@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-RELEASE_VERSION="${1}"
 
-UPSTREAM_REMOTE="upstream"
-MASTER_BRANCH="master"
+UPSTREAM_REMOTE="origin"
+MASTER_BRANCH="tekton-ci"
 TARGET_NAMESPACE="hub-ci"
 BINARIES="kubectl git"
 HUB_NAMESPACE="hub"
@@ -134,6 +133,8 @@ kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/api/golang-db-test.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/api/pipeline.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/ui/pipeline.yaml
 
+[[ ! -z ${oc} ]] &&
+    oc adm policy add-scc-to-user privileged system:serviceaccount:${TARGET_NAMESPACE}:quay-login
 
 cat <<EOF | kubectl -n ${TARGET_NAMESPACE} create -f-
 apiVersion: tekton.dev/v1beta1
