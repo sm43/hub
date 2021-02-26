@@ -124,8 +124,8 @@ spec:
       params:
         - name: script
           value: |
-            kubectl delete job db-migration --ignore-not-found
-            kubectl apply -n $(params.HUB_NAMESPACE) -f <(sed "s@image:.*@image: $(params.DB_MIGRATION_IMAGE):$(params.TAG)@" config/01-db/10-db-migration.yaml)
+            kubectl -n $(params.HUB_NAMESPACE) delete job db-migration --ignore-not-found
+            kubectl -n $(params.HUB_NAMESPACE) apply -f <(sed "s@image:.*@image: $(params.DB_MIGRATION_IMAGE):$(params.TAG)@" config/01-db/10-db-migration.yaml)
       workspaces:
         - name: kubeconfig-dir
           workspace: kubeconfig-dir
@@ -184,8 +184,10 @@ spec:
           value: |
             kubectl -n $(params.HUB_NAMESPACE) apply -f <(sed "s@image:.*@image: $(params.API_IMAGE):$(params.TAG)@" config/02-api/22-api-deployment.yaml)
             kubectl -n $(params.HUB_NAMESPACE) apply -f config/02-api/23-api-service.yaml
-            [[ "$(params.K8S_VARIANT)" == "openshift" ]] && \
+
+            if [[ "$(params.K8S_VARIANT)" == "openshift" ]] then
             kubectl -n $(params.HUB_NAMESPACE) apply -f config/04-openshift/40-api-route.yaml
+            fi
       when:
         - input: "$(tasks.check-api-deployment.results.output-result)"
           operator: in
