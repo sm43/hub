@@ -99,29 +99,32 @@ kubectl -n ${HUB_NAMESPACE} get cm api 2>/dev/null >/dev/null || {
 
 kubectl create namespace ${TARGET_NAMESPACE} 2>/dev/null || true
 
-kubectl -n ${TARGET_NAMESPACE} delete secret quay-sec --ignore-not-found
-kubectl -n ${TARGET_NAMESPACE} get secret quay-sec 2>/dev/null >/dev/null || {
+kubectl -n ${TARGET_NAMESPACE} delete secret registry-sec --ignore-not-found
+kubectl -n ${TARGET_NAMESPACE} get secret registry-sec 2>/dev/null >/dev/null || {
     echo "Enter Quay registry credentials to push the images: (quay.io/tekton-hub) "
         read -e -p "Enter Username: " USERNAME
         read -e -sp "Enter Password: " PASSWORD
 
-        kubectl -n ${TARGET_NAMESPACE} create secret generic quay-sec \
+        kubectl -n ${TARGET_NAMESPACE} create secret generic registry-sec \
             --type="kubernetes.io/basic-auth"  \
             --from-literal=username=${USERNAME} \
             --from-literal=password=${PASSWORD}
 
-        kubectl -n ${TARGET_NAMESPACE} annotate secret quay-sec tekton.dev/docker-0=quay.io
+        kubectl -n ${TARGET_NAMESPACE} annotate secret registry-sec tekton.dev/docker-0=quay.io
 }
 
-kubectl -n ${TARGET_NAMESPACE} delete serviceaccount quay-login --ignore-not-found
+kubectl -n ${TARGET_NAMESPACE} delete serviceaccount registry-login --ignore-not-found
 cat <<EOF | kubectl -n ${TARGET_NAMESPACE} create -f-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: quay-login
+  name: registry-login
 secrets:
-  - name: quay-sec
+  - name: registry-sec
 EOF
+
+kubectl -n ${TARGET_NAMESPACE} create role hub-pipeline --resource=deployment,services,pvc,job --verb=create,get,list,delete
+kubectl -n ${TARGET_NAMESPACE} create rolebinding hub-pipeline --serviceaccount=${TARGET_NAMESPACE}:registry-login --role=hub-pipeline
 
 kubectl -n ${TARGET_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/git-clone/0.2/git-clone.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/buildah/0.2/buildah.yaml
@@ -134,7 +137,7 @@ kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/api/pipeline.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/ui/pipeline.yaml
 
 # [[ ! -z ${oc} ]] &&
-#     oc adm policy add-scc-to-user privileged system:serviceaccount:${TARGET_NAMESPACE}:quay-login
+#     oc adm policy add-scc-to-user privileged system:serviceaccount:${TARGET_NAMESPACE}:registry-login
 
 cat <<EOF | kubectl -n ${TARGET_NAMESPACE} create -f-
 apiVersion: tekton.dev/v1beta1
@@ -142,7 +145,7 @@ kind: PipelineRun
 metadata:
   generateName: api
 spec:
-  serviceAccountName: quay-login
+  serviceAccountName: registry-login
   pipelineRef:
     name: api-deploy
   params:
@@ -177,7 +180,7 @@ kind: PipelineRun
 metadata:
   generateName: ui-
 spec:
-  serviceAccountName: quay-login
+  serviceAccountName: registry-login
   pipelineRef:
     name: ui-pipeline
   params:
