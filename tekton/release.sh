@@ -123,8 +123,8 @@ secrets:
   - name: registry-sec
 EOF
 
-kubectl -n ${TARGET_NAMESPACE} create role hub-pipeline --resource=deployment,services,pvc,job --verb=create,get,list,delete
-kubectl -n ${TARGET_NAMESPACE} create rolebinding hub-pipeline --serviceaccount=${HUB_NAMESPACE}:registry-login --role=hub-pipeline
+kubectl -n ${HUB_NAMESPACE} create role hub-pipeline --resource=deployment,services,pvc,job --verb=create,get,list,delete
+kubectl -n ${HUB_NAMESPACE} create rolebinding hub-pipeline --serviceaccount=${TARGET_NAMESPACE}:registry-login --role=hub-pipeline
 
 kubectl -n ${TARGET_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/git-clone/0.2/git-clone.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/buildah/0.2/buildah.yaml
