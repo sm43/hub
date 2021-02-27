@@ -41,8 +41,6 @@ cd ${GOPATH}/src/github.com/tektoncd/hub
 git checkout ${MASTER_BRANCH}
 git reset --hard ${UPSTREAM_REMOTE}/${MASTER_BRANCH}
 
-echo ; echo 'Hub Configurations: '; echo
-
 kubectl create namespace ${HUB_NAMESPACE} 2>/dev/null || true
 
 kubectl -n ${HUB_NAMESPACE} get secret db 2>/dev/null >/dev/null || {
