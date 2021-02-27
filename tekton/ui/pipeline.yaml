@@ -152,8 +152,9 @@ spec:
             kubectl -n $(params.HUB_NAMESPACE) apply -f <(sed "s@image:.*@image: $(params.IMAGE):$(params.TAG)@" config/03-ui/31-ui-deployment.yaml)
             kubectl -n $(params.HUB_NAMESPACE) apply -f config/03-ui/32-ui-service.yaml
 
-            if [[ "$(params.K8S_VARIANT)" == "openshift" ]] then
-            kubectl -n $(params.HUB_NAMESPACE) apply -f config/04-openshift/41-ui-route.yaml
+            if [ "$(params.K8S_VARIANT)" == "openshift" ]
+            then
+              kubectl -n $(params.HUB_NAMESPACE) apply -f config/04-openshift/41-ui-route.yaml
             fi
       workspaces:
         - name: manifest-dir

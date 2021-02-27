@@ -185,8 +185,9 @@ spec:
             kubectl -n $(params.HUB_NAMESPACE) apply -f <(sed "s@image:.*@image: $(params.API_IMAGE):$(params.TAG)@" config/02-api/22-api-deployment.yaml)
             kubectl -n $(params.HUB_NAMESPACE) apply -f config/02-api/23-api-service.yaml
 
-            if [[ "$(params.K8S_VARIANT)" == "openshift" ]] then
-            kubectl -n $(params.HUB_NAMESPACE) apply -f config/04-openshift/40-api-route.yaml
+            if [ "$(params.K8S_VARIANT)" == "openshift" ]
+            then
+              kubectl -n $(params.HUB_NAMESPACE) apply -f config/04-openshift/40-api-route.yaml
             fi
       when:
         - input: "$(tasks.check-api-deployment.results.output-result)"
