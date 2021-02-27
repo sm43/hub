@@ -104,7 +104,7 @@ kubectl create namespace ${TARGET_NAMESPACE} 2>/dev/null || true
 
 kubectl -n ${TARGET_NAMESPACE} delete secret registry-sec --ignore-not-found
 kubectl -n ${TARGET_NAMESPACE} get secret registry-sec 2>/dev/null >/dev/null || {
-    echo "Enter Quay registry credentials to push the images: (quay.io/tekton-hub) "
+    echo; echo "Enter Quay registry credentials to push the images: (quay.io/tekton-hub) "
         read -e -p "Enter Username: " USERNAME
         read -e -sp "Enter Password: " PASSWORD
 
@@ -130,7 +130,7 @@ EOF
 
 kubectl -n ${HUB_NAMESPACE} create role hub-pipeline \
   --resource=deployment,services,pvc,job \
-  --verb=create,get,list,delete \
+  --verb=create,get,list,delete
 kubectl -n ${HUB_NAMESPACE} create rolebinding hub-pipeline \
   --serviceaccount=${TARGET_NAMESPACE}:registry-login \
   --role=hub-pipeline
