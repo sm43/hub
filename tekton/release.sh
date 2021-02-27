@@ -41,6 +41,8 @@ cd ${GOPATH}/src/github.com/tektoncd/hub
 git checkout ${MASTER_BRANCH}
 git reset --hard ${UPSTREAM_REMOTE}/${MASTER_BRANCH}
 
+echo ; echo 'Hub Configurations: '; echo
+
 kubectl create namespace ${HUB_NAMESPACE} 2>/dev/null || true
 
 kubectl -n ${HUB_NAMESPACE} get secret db 2>/dev/null >/dev/null || {
@@ -55,7 +57,8 @@ kubectl -n ${HUB_NAMESPACE} get secret db 2>/dev/null >/dev/null || {
             --from-literal=POSTGRES_PASSWORD=${DB_PASSWORD} \
             --from-literal=POSTGRES_PORT="5432"
         
-        kubectl -n ${HUB_NAMESPACE} label secret db app=db 
+        kubectl -n ${HUB_NAMESPACE} label secret db app=db
+    echo; 
 }
 
 kubectl -n ${HUB_NAMESPACE} get secret api 2>/dev/null >/dev/null || {
@@ -79,7 +82,8 @@ kubectl -n ${HUB_NAMESPACE} get secret api 2>/dev/null >/dev/null || {
             --from-literal=GH_CLIENT_ID=${GH_CLIENT_ID} \
             --from-literal=API_URL="https://api.hub.tekton.dev" 
         
-        kubectl -n ${HUB_NAMESPACE} label cm ui app=ui         
+        kubectl -n ${HUB_NAMESPACE} label cm ui app=ui
+    echo;         
 }
 
 kubectl -n ${HUB_NAMESPACE} get cm api 2>/dev/null >/dev/null || {
@@ -94,7 +98,8 @@ kubectl -n ${HUB_NAMESPACE} get cm api 2>/dev/null >/dev/null || {
         kubectl -n ${HUB_NAMESPACE} create cm api \
             --from-literal=CONFIG_FILE_URL=${HUB_CONFIG} 
         
-        kubectl -n ${HUB_NAMESPACE} label cm api app=api 
+        kubectl -n ${HUB_NAMESPACE} label cm api app=api
+    echo; 
 }
 
 kubectl create namespace ${TARGET_NAMESPACE} 2>/dev/null || true
@@ -113,6 +118,8 @@ kubectl -n ${TARGET_NAMESPACE} get secret registry-sec 2>/dev/null >/dev/null ||
         kubectl -n ${TARGET_NAMESPACE} annotate secret registry-sec tekton.dev/docker-0=quay.io
 }
 
+echo; echo 'Creates service account and necessary role to create resources: '
+
 kubectl -n ${TARGET_NAMESPACE} delete serviceaccount registry-login --ignore-not-found
 cat <<EOF | kubectl -n ${TARGET_NAMESPACE} create -f-
 apiVersion: v1
@@ -123,8 +130,14 @@ secrets:
   - name: registry-sec
 EOF
 
-kubectl -n ${HUB_NAMESPACE} create role hub-pipeline --resource=deployment,services,pvc,job --verb=create,get,list,delete
-kubectl -n ${HUB_NAMESPACE} create rolebinding hub-pipeline --serviceaccount=${TARGET_NAMESPACE}:registry-login --role=hub-pipeline
+kubectl -n ${HUB_NAMESPACE} create role hub-pipeline \
+  --resource=deployment,services,pvc,job \
+  --verb=create,get,list,delete \
+kubectl -n ${HUB_NAMESPACE} create rolebinding hub-pipeline \
+  --serviceaccount=${TARGET_NAMESPACE}:registry-login \
+  --role=hub-pipeline
+
+echo; echo 'Install Tasks: '
 
 kubectl -n ${TARGET_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/git-clone/0.2/git-clone.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/buildah/0.2/buildah.yaml
@@ -133,8 +146,12 @@ kubectl -n ${TARGET_NAMESPACE} apply -f https://raw.githubusercontent.com/tekton
 kubectl -n ${TARGET_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/npm/0.1/npm.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/api/golang-db-test.yaml
 
+echo; echo 'Install Pipelines: '
+
 kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/api/pipeline.yaml
 kubectl -n ${TARGET_NAMESPACE} apply -f ./tekton/ui/pipeline.yaml
+
+echo; echo 'Start Pipelines: '
 
 # [[ ! -z ${oc} ]] &&
 #     oc adm policy add-scc-to-user privileged system:serviceaccount:${TARGET_NAMESPACE}:registry-login
