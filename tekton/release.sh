@@ -41,6 +41,11 @@ cd ${GOPATH}/src/github.com/tektoncd/hub
 git checkout ${MASTER_BRANCH}
 git reset --hard ${UPSTREAM_REMOTE}/${MASTER_BRANCH}
 
+echo; echo 'Creating tag for new release:  ';
+read -e -p "Enter tag message: " TAG_MESSAGE
+git tag -a ${RELEASE_VERSION} -m ${TAG_MESSAGE}
+git push --tags
+
 kubectl create namespace ${HUB_NAMESPACE} 2>/dev/null || true
 
 kubectl -n ${HUB_NAMESPACE} get secret db 2>/dev/null >/dev/null || {
