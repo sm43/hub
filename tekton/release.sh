@@ -61,7 +61,7 @@ git push ${UPSTREAM_REMOTE} --tags
 kubectl create namespace ${HUB_NAMESPACE} 2>/dev/null || true
 
 kubectl -n ${HUB_NAMESPACE} get secret db 2>/dev/null >/dev/null || {
-    echo "Database Configurations:"
+    echo; echo "Database Configurations:"
         read -e -p "Enter DB Name: " DB_NAME
         read -e -p "Enter DB Username: " DB_USERNAME
         read -e -p "Enter DB Password: " DB_PASSWORD
@@ -80,7 +80,7 @@ kubectl -n ${HUB_NAMESPACE} get secret api 2>/dev/null >/dev/null || {
     echo "API Configurations:"
         read -e -p "Enter GitHub OAuth Client ID: " GH_CLIENT_ID
         read -e -p "Enter GitHub OAuth Client Secret: " GH_CLIENT_SECRET
-        read -e -p "Enter JWT Signing key " JWT_SIGNING_KEY
+        read -e -p "Enter JWT Signing key: " JWT_SIGNING_KEY
         read -e -p "Enter the Access JWT expire time: (eg. 1d) " ACCESS_JWT_EXPIRES_IN
         read -e -p "Enter the Refresh JWT expire time: (eg. 1d) " REFRESH_JWT_EXPIRES_IN
 
@@ -178,7 +178,7 @@ cat <<EOF | kubectl -n ${HUB_CI_NAMESPACE} create -f-
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: hub-api-${RELEASE_VERSION}-
+  generateName: hub-api-
 spec:
   serviceAccountName: registry-login
   pipelineRef:
@@ -213,7 +213,7 @@ cat <<EOF | kubectl -n ${HUB_CI_NAMESPACE} create -f-
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: hub-ui-${RELEASE_VERSION}-
+  generateName: hub-ui-
 spec:
   serviceAccountName: registry-login
   pipelineRef:
