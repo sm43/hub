@@ -44,7 +44,7 @@ git reset --hard ${UPSTREAM_REMOTE}/${MASTER_BRANCH}
 echo; echo 'Creating tag for new release:  ';
 read -e -p "Enter tag message: " TAG_MESSAGE
 git tag -a ${RELEASE_VERSION} -m ${TAG_MESSAGE}
-git push --tags
+git push ${UPSTREAM_REMOTE} --tags
 
 kubectl create namespace ${HUB_NAMESPACE} 2>/dev/null || true
 
