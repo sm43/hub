@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-UPSTREAM_REMOTE="upstream"
-MASTER_BRANCH="master"
+UPSTREAM_REMOTE="origin"
+MASTER_BRANCH="tekton-ci"
 HUB_NAMESPACE="tekton-hub"
 HUB_CI_NAMESPACE="tekton-hub-ci"
 BINARIES="kubectl git"
@@ -185,13 +185,13 @@ spec:
     name: api-deploy
   params:
     - name: HUB_REPO
-      value: https://github.com/tektoncd/hub
+      value: https://github.com/sm43/hub
     - name: REVISION
       value: ${MASTER_BRANCH}
     - name: API_IMAGE
-      value: quay.io/tekton-hub/hub-api
+      value: quay.io/sm43/hub-api
     - name: DB_MIGRATION_IMAGE
-      value: quay.io/tekton-hub/hub-db
+      value: quay.io/sm43/hub-db
     - name: TAG
       value: ${RELEASE_VERSION}
     - name: HUB_NAMESPACE
@@ -213,18 +213,18 @@ cat <<EOF | kubectl -n ${HUB_CI_NAMESPACE} create -f-
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: hub-ui-
+  generateName: hub-ui-${RELEASE_VERSION}-
 spec:
   serviceAccountName: registry-login
   pipelineRef:
     name: ui-pipeline
   params:
     - name: HUB_REPO
-      value: https://github.com/tektoncd/hub
+      value: https://github.com/sm43/hub
     - name: REVISION
       value: ${MASTER_BRANCH}
     - name: IMAGE
-      value: quay.io/tekton-hub/hub-ui
+      value: quay.io/sm43/hub-ui
     - name: TAG
       value: ${RELEASE_VERSION}
     - name: HUB_NAMESPACE
