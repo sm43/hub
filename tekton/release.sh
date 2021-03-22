@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-UPSTREAM_REMOTE="upstream"
-BRANCH="main"
+UPSTREAM_REMOTE="origin"
+BRANCH="tekton-ci"
 
-IMAGE_REGISTRY="quay.io/tekton-hub"
+IMAGE_REGISTRY="quay.io/sm43"
 
 HUB_NAMESPACE="tekton-hub"
 HUB_CI_NAMESPACE="tekton-hub-ci"
@@ -177,7 +177,7 @@ kubectl -n ${HUB_CI_NAMESPACE} apply -f ./tekton/ui/pipeline.yaml
 
 echo; echo 'Start Pipelines: '
 
-HUB_REPO="https://github.com/tektoncd/hub"
+HUB_REPO="https://github.com/sm43/hub"
 
 cat <<EOF | kubectl -n ${HUB_CI_NAMESPACE} create -f-
 apiVersion: tekton.dev/v1beta1
