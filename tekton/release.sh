@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-UPSTREAM_REMOTE="upsteam"
-MASTER_BRANCH="master"
+UPSTREAM_REMOTE="upstream"
+BRANCH="master"
 HUB_NAMESPACE="tekton-hub"
 HUB_CI_NAMESPACE="tekton-hub-ci"
 BINARIES="kubectl git"
@@ -34,12 +34,15 @@ echo; echo 'Tekton Hub Deployment: '
 read -e -p "Are you deploying on OpenShift (Y/n): " YESORNO
 if [ "${YESORNO}" == "Y" ] || [ "${YESORNO}" == "y" ]; then
   CLUSTER='openshift'
+  type -p oc >/dev/null || { echo "'oc' need to be avail"; exit 1 ;}
 elif [ "${YESORNO}" == "N" ] || [ "${YESORNO}" == "n" ]; then  
   CLUSTER='kubernetes'
 else 
   echo 'invalid input'
   exit 1
 fi
+
+
 
 cd ${GOPATH}/src/github.com/tektoncd/hub
 
@@ -49,8 +52,8 @@ cd ${GOPATH}/src/github.com/tektoncd/hub
    exit 1
 }
 
-git checkout ${MASTER_BRANCH}
-git reset --hard ${UPSTREAM_REMOTE}/${MASTER_BRANCH}
+git checkout ${BRANCH}
+git reset --hard ${UPSTREAM_REMOTE}/${BRANCH}
 
 echo; echo 'Creating tag for new release:  ';
 read -e -p "Enter tag message: " TAG_MESSAGE
@@ -186,7 +189,7 @@ spec:
     - name: HUB_REPO
       value: https://github.com/tektoncd/hub
     - name: REVISION
-      value: ${MASTER_BRANCH}
+      value: ${BRANCH}
     - name: API_IMAGE
       value: quay.io/tekton-hub/hub-api
     - name: DB_MIGRATION_IMAGE
@@ -221,7 +224,7 @@ spec:
     - name: HUB_REPO
       value: https://github.com/tektoncd/hub
     - name: REVISION
-      value: ${MASTER_BRANCH}
+      value: ${BRANCH}
     - name: IMAGE
       value: quay.io/tekton-hub/hub-ui
     - name: TAG
