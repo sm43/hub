@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-HUB_REPO="https://github.com/tektoncd/hub"
-UPSTREAM_REMOTE="upstream"
-BRANCH="main"
+HUB_REPO="https://github.com/sm43/hub"
+UPSTREAM_REMOTE="origin"
+BRANCH="tekton-ci"
 
-IMAGE_REGISTRY="quay.io/tekton-hub"
+IMAGE_REGISTRY="sm43"
 
 HUB_NAMESPACE="tekton-hub"
 HUB_CI_NAMESPACE="tekton-hub-ci"
