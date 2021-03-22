@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+HUB_REPO="https://github.com/tektoncd/hub"
 UPSTREAM_REMOTE="upstream"
-BRANCH="master"
+BRANCH="main"
+
+IMAGE_REGISTRY="quay.io/tekton-hub"
+
 HUB_NAMESPACE="tekton-hub"
 HUB_CI_NAMESPACE="tekton-hub-ci"
 BINARIES="kubectl git"
@@ -41,8 +45,6 @@ else
   echo 'invalid input'
   exit 1
 fi
-
-
 
 cd ${GOPATH}/src/github.com/tektoncd/hub
 
@@ -105,11 +107,11 @@ kubectl -n ${HUB_NAMESPACE} get secret api 2>/dev/null >/dev/null || {
 
 kubectl -n ${HUB_NAMESPACE} get cm api 2>/dev/null >/dev/null || {
     echo "Hub Config File:"
-        read -e -p "Enter Raw URL of the hub config file (Default: https://raw.githubusercontent.com/tektoncd/hub/master/config.yaml): " HUB_CONFIG
+        read -e -p "Enter Raw URL of the hub config file (Default: https://raw.githubusercontent.com/tektoncd/hub/main/config.yaml): " HUB_CONFIG
 
         if [ -z "$HUB_CONFIG" ]
         then
-            HUB_CONFIG=https://raw.githubusercontent.com/tektoncd/hub/master/config.yaml
+            HUB_CONFIG=https://raw.githubusercontent.com/tektoncd/hub/main/config.yaml
         fi
 
         kubectl -n ${HUB_NAMESPACE} create cm api \
@@ -162,11 +164,11 @@ fi
 
 echo; echo 'Install Tasks: '
 
-kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/git-clone/0.2/git-clone.yaml
-kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/buildah/0.2/buildah.yaml
-kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/golangci-lint/0.1/golangci-lint.yaml
-kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/kubernetes-actions/0.2/kubernetes-actions.yaml
-kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/npm/0.1/npm.yaml
+kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.2/git-clone.yaml
+kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildah/0.2/buildah.yaml
+kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/golangci-lint/0.1/golangci-lint.yaml
+kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/kubernetes-actions/0.2/kubernetes-actions.yaml
+kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/npm/0.1/npm.yaml
 kubectl -n ${HUB_CI_NAMESPACE} apply -f ./tekton/api/golang-db-test.yaml
 
 echo; echo 'Install Pipelines: '
@@ -187,13 +189,13 @@ spec:
     name: api-deploy
   params:
     - name: HUB_REPO
-      value: https://github.com/tektoncd/hub
+      value: ${HUB_REPO}
     - name: REVISION
       value: ${BRANCH}
     - name: API_IMAGE
-      value: quay.io/tekton-hub/hub-api
+      value: ${IMAGE_REGISTRY}/api
     - name: DB_MIGRATION_IMAGE
-      value: quay.io/tekton-hub/hub-db
+      value: ${IMAGE_REGISTRY}/db
     - name: TAG
       value: ${RELEASE_VERSION}
     - name: HUB_NAMESPACE
@@ -222,11 +224,11 @@ spec:
     name: ui-pipeline
   params:
     - name: HUB_REPO
-      value: https://github.com/tektoncd/hub
+      value: ${HUB_REPO}
     - name: REVISION
       value: ${BRANCH}
     - name: IMAGE
-      value: quay.io/tekton-hub/hub-ui
+      value: ${IMAGE_REGISTRY}/ui
     - name: TAG
       value: ${RELEASE_VERSION}
     - name: HUB_NAMESPACE
