@@ -283,7 +283,7 @@ main() {
 
   checkPrerequisites
 
-  echo 'Tekton Hub Deployment: '
+  echo 'Tekton Hub Release: '
 
   # ask for release version to create tag
   getReleaseVersion
