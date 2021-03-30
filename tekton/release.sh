@@ -242,7 +242,7 @@ spec:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 500Mi
+              storage: 1Gi
 EOF
 
   cat <<EOF | kubectl -n ${HUB_CI_NAMESPACE} create -f-
@@ -275,7 +275,7 @@ spec:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 500Mi
+              storage: 1Gi
 EOF
 }
 
