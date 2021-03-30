@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -u -e -o pipefail
 
-HUB_REPO="https://github.com/tektoncd/hub"
-UPSTREAM_REMOTE="upstream"
-BRANCH="main"
-IMAGE_REGISTRY="quay.io/tekton-hub"
+HUB_REPO="https://github.com/sm43/hub"
+UPSTREAM_REMOTE="origin"
+BRANCH="tekton-ci"
+IMAGE_REGISTRY="quay.io/sm43"
 
 RELEASE_VERSION=""
 HUB_NAMESPACE="tekton-hub"
