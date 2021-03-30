@@ -188,6 +188,12 @@ EOF
 
   if [ "${CLUSTER}" == "openshift" ]; then
     oc adm policy add-scc-to-user privileged system:serviceaccount:${HUB_CI_NAMESPACE}:registry-login
+    kubectl -n ${HUB_NAMESPACE} create role hub-pipeline-route \
+      --resource=route \
+      --verb=create,get,list,delete,patch
+    kubectl -n ${HUB_NAMESPACE} create rolebinding hub-pipeline-route \
+    --serviceaccount=${HUB_CI_NAMESPACE}:registry-login \
+    --role=hub-pipeline-route
   fi
 
   echo;
