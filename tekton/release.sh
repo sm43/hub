@@ -193,36 +193,6 @@ EOF
   echo;
 }
 
-main() {
-
-  checkPrerequisites
-
-  echo 'Tekton Hub Deployment: '
-
-  # ask for release version to create tag
-  getReleaseVersion
-
-  # OpenShift/Kubernetes
-  whichCluster
-
-  # creates a new git tag with release version and push to upstream
-  createGitTag
-
-  # creates hub supporting secrets and config map
-  createHubSecretAndCM
-
-  # create registry secret to push image to quay.io/tekton-hub
-  createRegistrySecret
-
-  # creates required role for pipeline service account to crud resources in HUB_NAMESPACE
-  createNecessaryRoles
-
-  # installs and starts pipelines
-  startPipelines
-
-  return 0
-}
-
 startPipelines() {
   echo 'Install Tasks: '
 
@@ -307,6 +277,36 @@ spec:
             requests:
               storage: 500Mi
 EOF
+}
+
+main() {
+
+  checkPrerequisites
+
+  echo 'Tekton Hub Deployment: '
+
+  # ask for release version to create tag
+  getReleaseVersion
+
+  # OpenShift/Kubernetes
+  whichCluster
+
+  # creates a new git tag with release version and push to upstream
+  createGitTag
+
+  # creates hub supporting secrets and config map
+  createHubSecretAndCM
+
+  # create registry secret to push image to quay.io/tekton-hub
+  createRegistrySecret
+
+  # creates required role for pipeline service account to crud resources in HUB_NAMESPACE
+  createNecessaryRoles
+
+  # installs and starts pipelines
+  startPipelines
+
+  return 0
 }
 
 main "$@"
