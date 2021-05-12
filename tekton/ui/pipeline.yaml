@@ -32,7 +32,7 @@ spec:
     - name: fetch-repository
       taskRef:
         name: git-clone
-        bundle: gcr.io/tekton-releases/catalog/upstream/buildah:0.2
+        bundle: gcr.io/tekton-releases/catalog/upstream/git-clone:0.2
       workspaces:
         - name: output
           workspace: shared-workspace
@@ -79,6 +79,7 @@ spec:
     - name: build-test
       taskRef:
         name: npm
+        bundle: gcr.io/tekton-releases/catalog/upstream/npm:0.1
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -110,6 +111,7 @@ spec:
     - name: build-push-image
       taskRef:
         name: buildah
+        bundle: gcr.io/tekton-releases/catalog/upstream/buildah:0.2
       runAfter:
         - unit-test
         - build-test
