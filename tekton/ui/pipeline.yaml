@@ -32,6 +32,7 @@ spec:
     - name: fetch-repository
       taskRef:
         name: git-clone
+        bundle: gcr.io/tekton-releases/catalog/upstream/buildah:0.2
       workspaces:
         - name: output
           workspace: shared-workspace
@@ -47,6 +48,7 @@ spec:
     - name: install-dependencies
       taskRef:
         name: npm
+        bundle: gcr.io/tekton-releases/catalog/upstream/npm:0.1
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -61,6 +63,7 @@ spec:
     - name: run-lint
       taskRef:
         name: npm
+        bundle: gcr.io/tekton-releases/catalog/upstream/npm:0.1
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -91,6 +94,7 @@ spec:
     - name: unit-test
       taskRef:
         name: npm
+        bundle: gcr.io/tekton-releases/catalog/upstream/npm:0.1
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -122,6 +126,7 @@ spec:
     - name: check-ui-deployment
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       params:
         - name: script
           value: |
@@ -139,6 +144,7 @@ spec:
     - name: patch-ui-image
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       params:
         - name: script
           value: |
@@ -158,6 +164,7 @@ spec:
     - name: create-deployment
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       runAfter:
         - check-ui-deployment
       params:
