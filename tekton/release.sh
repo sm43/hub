@@ -205,11 +205,10 @@ EOF
 startPipelines() {
   echo 'Install Tasks: '
 
-  kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.2/git-clone.yaml
-  kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildah/0.2/buildah.yaml
-  kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/golangci-lint/0.1/golangci-lint.yaml
-  kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/kubernetes-actions/0.2/kubernetes-actions.yaml
-  kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/npm/0.1/npm.yaml
+  # kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.2/git-clone.yaml
+  # kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildah/0.2/buildah.yaml
+  # kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/kubernetes-actions/0.2/kubernetes-actions.yaml
+  # kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/npm/0.1/npm.yaml
   kubectl -n ${HUB_CI_NAMESPACE} apply -f ./tekton/api/golang-db-test.yaml
 
   echo; echo 'Install Pipelines: '

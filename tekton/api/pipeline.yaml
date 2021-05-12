@@ -33,6 +33,7 @@ spec:
     - name: fetch-repository
       taskRef:
         name: git-clone
+        bundle: gcr.io/tekton-releases/catalog/upstream/git-clone:0.2
       workspaces:
         - name: output
           workspace: shared-workspace
@@ -65,6 +66,7 @@ spec:
     - name: build-push-api-image
       taskRef:
         name: buildah
+        bundle: gcr.io/tekton-releases/catalog/upstream/buildah:0.2
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -80,6 +82,7 @@ spec:
     - name: build-push-migration-image
       taskRef:
         name: buildah
+        bundle: gcr.io/tekton-releases/catalog/upstream/buildah:0.2
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -97,6 +100,7 @@ spec:
     - name: check-db-deployment
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       params:
         - name: script
           value: |
@@ -115,6 +119,7 @@ spec:
     - name: create-db-deployment
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       workspaces:
         - name: manifest-dir
           workspace: shared-workspace
@@ -135,6 +140,7 @@ spec:
     - name: create-new-migration-job
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       params:
         - name: script
           value: |
@@ -150,6 +156,7 @@ spec:
     - name: check-api-deployment
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       params:
         - name: script
           value: |
@@ -167,6 +174,7 @@ spec:
     - name: patch-api-image
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       params:
         - name: script
           value: |
@@ -188,6 +196,7 @@ spec:
     - name: create-deployment
       taskRef:
         name: kubernetes-actions
+        bundle: gcr.io/tekton-releases/catalog/upstream/kubernetes-actions:0.2
       workspaces:
         - name: manifest-dir
           workspace: shared-workspace
