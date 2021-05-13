@@ -231,7 +231,7 @@ spec:
     - name: API_IMAGE
       value: ${IMAGE_REGISTRY}/api
     - name: DB_MIGRATION_IMAGE
-      value: ${IMAGE_REGISTRY}/db
+      value: ${IMAGE_REGISTRY}/db-migration
     - name: TAG
       value: ${RELEASE_VERSION}
     - name: HUB_NAMESPACE
