@@ -122,7 +122,8 @@ createHubSecretAndCM() {
 
     kubectl -n ${HUB_NAMESPACE} create cm ui \
       --from-literal=GH_CLIENT_ID="${GH_CLIENT_ID}" \
-      --from-literal=API_URL="https://api.hub.tekton.dev"
+      --from-literal=API_URL="https://api.hub.tekton.dev" \
+      --from-literal=API_VERSION="v1"
 
     kubectl -n ${HUB_NAMESPACE} label cm ui app=ui
     echo;
@@ -204,11 +205,6 @@ EOF
 
 startPipelines() {
   echo 'Install Tasks: '
-
-  # kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.2/git-clone.yaml
-  # kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildah/0.2/buildah.yaml
-  # kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/kubernetes-actions/0.2/kubernetes-actions.yaml
-  # kubectl -n ${HUB_CI_NAMESPACE} apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/npm/0.1/npm.yaml
   kubectl -n ${HUB_CI_NAMESPACE} apply -f ./tekton/api/golang-db-test.yaml
 
   echo; echo 'Install Pipelines: '

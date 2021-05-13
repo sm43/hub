@@ -79,7 +79,7 @@ spec:
         - name: POSTGRES_PORT
           value: "5432"
   sidecars:
-    - image: postgres:12
+    - image: postgres:12@sha256:8f10c40e5e687b2cbf2f28acb5192049cdb89ef1a8db44d2f21e6bdd1a36e4be
       name: db
       ports:
         - containerPort: 5432
