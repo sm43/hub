@@ -22,6 +22,7 @@ import (
 	"github.com/tektoncd/hub/api/gen/catalog"
 	"github.com/tektoncd/hub/api/pkg/app"
 	"github.com/tektoncd/hub/api/pkg/db/model"
+	"github.com/tektoncd/hub/api/pkg/parser"
 	"github.com/tektoncd/hub/api/pkg/service/auth"
 	"gorm.io/gorm"
 )
@@ -33,6 +34,7 @@ type service struct {
 
 var (
 	internalError = catalog.MakeInternalError(fmt.Errorf("failed to refresh catalog"))
+	fetchError    = catalog.MakeInternalError(fmt.Errorf("failed to fetch catalog errors"))
 )
 
 // New returns the catalog service implementation.
@@ -104,6 +106,61 @@ func (s *service) RefreshAll(ctx context.Context, p *catalog.RefreshAllPayload) 
 	}
 
 	return res, nil
+}
+
+// List all errors occurred refreshing a catalog
+func (s *service) CatalogError(ctx context.Context, p *catalog.CatalogErrorPayload) (*catalog.CatalogErrorResult, error) {
+
+	log := s.Logger(ctx)
+	db := s.DB(ctx)
+
+	ctg := model.Catalog{}
+	if err := db.Where(&model.Catalog{Name: p.CatalogName}).First(&ctg).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, catalogNotFoundErr(p.CatalogName)
+		}
+		log.Error(err)
+		return nil, internalError
+	}
+
+	allCtgError := []model.CatalogError{}
+	if err := db.Where(&model.CatalogError{CatalogID: ctg.ID}).Find(&allCtgError).Error; err != nil {
+		log.Error(err)
+		return nil, fetchError
+	}
+
+	res := []*catalog.CatalogErrors{}
+
+	infoError := []string{}
+	warningError := []string{}
+	criticalError := []string{}
+
+	for _, item := range allCtgError {
+		switch item.Type {
+		case parser.Info.String():
+			infoError = append(infoError, item.Detail)
+
+		case parser.Warning.String():
+			warningError = append(warningError, item.Detail)
+
+		case parser.Critical.String():
+			criticalError = append(criticalError, item.Detail)
+		}
+	}
+
+	if len(infoError) > 0 {
+		res = append(res, &catalog.CatalogErrors{Type: parser.Info.String(), Errors: infoError})
+	}
+
+	if len(warningError) > 0 {
+		res = append(res, &catalog.CatalogErrors{Type: parser.Warning.String(), Errors: warningError})
+	}
+
+	if len(criticalError) > 0 {
+		res = append(res, &catalog.CatalogErrors{Type: parser.Critical.String(), Errors: criticalError})
+	}
+
+	return &catalog.CatalogErrorResult{Data: res}, nil
 }
 
 func catalogNotFoundErr(name string) error {

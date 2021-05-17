@@ -70,6 +70,15 @@ func RefreshAllChecker(tc *testutils.TestConfig) *goahttpcheck.APIChecker {
 	return checker
 }
 
+func CatalogErrorChecker(tc *testutils.TestConfig) *goahttpcheck.APIChecker {
+	service := auth.NewService(tc.APIConfig, "catalog")
+	checker := goahttpcheck.New()
+	checker.Mount(server.NewCatalogErrorHandler,
+		server.MountCatalogErrorHandler,
+		catalog.NewCatalogErrorEndpoint(NewServiceTest(tc), service.JWTAuth))
+	return checker
+}
+
 func TestRefreshAll_Http(t *testing.T) {
 	tc := testutils.Setup(t)
 	testutils.LoadFixtures(t, tc.FixturePath())
@@ -92,4 +101,29 @@ func TestRefreshAll_Http(t *testing.T) {
 
 		assert.Equal(t, 2, len(res))
 	})
+}
+
+func TestCatalogError_Http(t *testing.T) {
+	tc := testutils.Setup(t)
+	testutils.LoadFixtures(t, tc.FixturePath())
+
+	// user with catalog:refresh scope
+	agent, token, err := tc.AgentWithScopes("agent-001", "catalog:refresh")
+	assert.Equal(t, agent.AgentName, "agent-001")
+	assert.NoError(t, err)
+
+	CatalogErrorChecker(tc).Test(t, http.MethodGet, "/catalog/catalog-official/error").
+		WithHeader("Authorization", token).Check().
+		HasStatus(200).Cb(func(r *http.Response) {
+		b, readErr := ioutil.ReadAll(r.Body)
+		assert.NoError(t, readErr)
+		defer r.Body.Close()
+
+		res := catalog.CatalogErrorResult{}
+		marshallErr := json.Unmarshal([]byte(b), &res)
+		assert.NoError(t, marshallErr)
+
+		assert.Equal(t, "info", res.Data[0].Type)
+	})
+
 }
