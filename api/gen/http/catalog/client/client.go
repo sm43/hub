@@ -116,15 +116,10 @@ func (c *Client) RefreshAll() goa.Endpoint {
 // service CatalogError server.
 func (c *Client) CatalogError() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeCatalogErrorRequest(c.encoder)
 		decodeResponse = DecodeCatalogErrorResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
 		req, err := c.BuildCatalogErrorRequest(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-		err = encodeRequest(req, v)
 		if err != nil {
 			return nil, err
 		}

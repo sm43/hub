@@ -70,21 +70,12 @@ paths:
       tags:
       - catalog
       summary: CatalogError catalog
-      description: |-
-        List all errors occurred refreshing a catalog
-
-        **Required security scopes for jwt**:
-          * `catalog:refresh`
+      description: List all errors occurred refreshing a catalog
       operationId: catalog#CatalogError
       parameters:
       - name: catalogName
         in: path
         description: Name of catalog
-        required: true
-        type: string
-      - name: Authorization
-        in: header
-        description: JWT
         required: true
         type: string
       responses:
@@ -100,8 +91,6 @@ paths:
             $ref: '#/definitions/CatalogCatalogErrorInternalErrorResponseBody'
       schemes:
       - https
-      security:
-      - jwt_header_Authorization: []
   /catalog/{catalogName}/refresh:
     post:
       tags:

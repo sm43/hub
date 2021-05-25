@@ -28,7 +28,7 @@ func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
 		Refresh:      NewRefreshEndpoint(s, a.JWTAuth),
 		RefreshAll:   NewRefreshAllEndpoint(s, a.JWTAuth),
-		CatalogError: NewCatalogErrorEndpoint(s, a.JWTAuth),
+		CatalogError: NewCatalogErrorEndpoint(s),
 	}
 }
 
@@ -84,19 +84,9 @@ func NewRefreshAllEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoi
 
 // NewCatalogErrorEndpoint returns an endpoint function that calls the method
 // "CatalogError" of service "catalog".
-func NewCatalogErrorEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoint {
+func NewCatalogErrorEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*CatalogErrorPayload)
-		var err error
-		sc := security.JWTScheme{
-			Name:           "jwt",
-			Scopes:         []string{"rating:read", "rating:write", "agent:create", "catalog:refresh", "config:refresh", "refresh:token"},
-			RequiredScopes: []string{"catalog:refresh"},
-		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
-		if err != nil {
-			return nil, err
-		}
 		return s.CatalogError(ctx, p)
 	}
 }

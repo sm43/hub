@@ -110,5 +110,6 @@ func WithUserID(ctx context.Context, id uint) context.Context {
 
 // UserID fetch the user id from passed context
 func UserID(ctx context.Context) uint {
-	return ctx.Value(userIDKey).(uint)
+	return uint(1)
+	//return ctx.Value(userIDKey).(uint)
 }

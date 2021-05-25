@@ -263,26 +263,6 @@ func (c *Client) BuildCatalogErrorRequest(ctx context.Context, v interface{}) (*
 	return req, nil
 }
 
-// EncodeCatalogErrorRequest returns an encoder for requests sent to the
-// catalog CatalogError server.
-func EncodeCatalogErrorRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
-	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*catalog.CatalogErrorPayload)
-		if !ok {
-			return goahttp.ErrInvalidType("catalog", "CatalogError", "*catalog.CatalogErrorPayload", v)
-		}
-		{
-			head := p.Token
-			if !strings.Contains(head, " ") {
-				req.Header.Set("Authorization", "Bearer "+head)
-			} else {
-				req.Header.Set("Authorization", head)
-			}
-		}
-		return nil
-	}
-}
-
 // DecodeCatalogErrorResponse returns a decoder for responses returned by the
 // catalog CatalogError endpoint. restoreBody controls whether the response
 // body should be restored after having been read.

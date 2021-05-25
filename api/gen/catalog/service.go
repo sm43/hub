@@ -71,8 +71,6 @@ type RefreshAllPayload struct {
 type CatalogErrorPayload struct {
 	// Name of catalog
 	CatalogName string
-	// JWT
-	Token string
 }
 
 // CatalogErrorResult is the result type of the catalog service CatalogError

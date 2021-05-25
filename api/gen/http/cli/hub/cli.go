@@ -92,7 +92,6 @@ func ParseEndpoint(
 
 		catalogCatalogErrorFlags           = flag.NewFlagSet("catalog-error", flag.ExitOnError)
 		catalogCatalogErrorCatalogNameFlag = catalogCatalogErrorFlags.String("catalog-name", "REQUIRED", "Name of catalog")
-		catalogCatalogErrorTokenFlag       = catalogCatalogErrorFlags.String("token", "REQUIRED", "")
 
 		categoryFlags = flag.NewFlagSet("category", flag.ContinueOnError)
 
@@ -380,7 +379,7 @@ func ParseEndpoint(
 				data, err = catalogc.BuildRefreshAllPayload(*catalogRefreshAllTokenFlag)
 			case "catalog-error":
 				endpoint = c.CatalogError()
-				data, err = catalogc.BuildCatalogErrorPayload(*catalogCatalogErrorCatalogNameFlag, *catalogCatalogErrorTokenFlag)
+				data, err = catalogc.BuildCatalogErrorPayload(*catalogCatalogErrorCatalogNameFlag)
 			}
 		case "category":
 			c := categoryc.NewClient(scheme, host, doer, enc, dec, restore)
@@ -559,14 +558,13 @@ Example:
 }
 
 func catalogCatalogErrorUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] catalog catalog-error -catalog-name STRING -token STRING
+	fmt.Fprintf(os.Stderr, `%s [flags] catalog catalog-error -catalog-name STRING
 
 List all errors occurred refreshing a catalog
     -catalog-name STRING: Name of catalog
-    -token STRING: 
 
 Example:
-    `+os.Args[0]+` catalog catalog-error --catalog-name "tekton" --token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODM2MDAsImlhdCI6MTU3Nzg4MDAwMCwiaWQiOjExLCJpc3MiOiJUZWt0b24gSHViIiwic2NvcGVzIjpbInJlZnJlc2g6dG9rZW4iXSwidHlwZSI6InJlZnJlc2gtdG9rZW4ifQ.4RdUk5ttHdDiymurlZ_f7Uy5Pas3Lq9w04BjKQKRiCE"
+    `+os.Args[0]+` catalog catalog-error --catalog-name "tekton"
 `, os.Args[0])
 }
 

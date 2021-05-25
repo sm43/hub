@@ -123,44 +123,35 @@ func (s *service) CatalogError(ctx context.Context, p *catalog.CatalogErrorPaylo
 		return nil, internalError
 	}
 
-	allCtgError := []model.CatalogError{}
+	var allCtgError []model.CatalogError
 	if err := db.Where(&model.CatalogError{CatalogID: ctg.ID}).Find(&allCtgError).Error; err != nil {
 		log.Error(err)
 		return nil, fetchError
 	}
 
-	res := []*catalog.CatalogErrors{}
-
-	infoError := []string{}
-	warningError := []string{}
-	criticalError := []string{}
+	rs := map[string][]string{}
 
 	for _, item := range allCtgError {
 		switch item.Type {
 		case parser.Info.String():
-			infoError = append(infoError, item.Detail)
-
+			rs["info"] = append(rs["info"], item.Detail)
 		case parser.Warning.String():
-			warningError = append(warningError, item.Detail)
-
+			rs["warning"] = append(rs["warning"], item.Detail)
 		case parser.Critical.String():
-			criticalError = append(criticalError, item.Detail)
+			rs["critical"] = append(rs["critical"], item.Detail)
+		default:
+			rs["unknown"] = append(rs["unknown"], item.Detail)
+		}
+	}
+	ret := &catalog.CatalogErrorResult{}
+
+	for key, element := range rs {
+		if len(element) > 0 {
+			ret.Data = append(ret.Data, &catalog.CatalogErrors{Type: key, Errors: element})
 		}
 	}
 
-	if len(infoError) > 0 {
-		res = append(res, &catalog.CatalogErrors{Type: parser.Info.String(), Errors: infoError})
-	}
-
-	if len(warningError) > 0 {
-		res = append(res, &catalog.CatalogErrors{Type: parser.Warning.String(), Errors: warningError})
-	}
-
-	if len(criticalError) > 0 {
-		res = append(res, &catalog.CatalogErrors{Type: parser.Critical.String(), Errors: criticalError})
-	}
-
-	return &catalog.CatalogErrorResult{Data: res}, nil
+	return ret, nil
 }
 
 func catalogNotFoundErr(name string) error {

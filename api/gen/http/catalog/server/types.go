@@ -234,10 +234,9 @@ func NewRefreshAllPayload(token string) *catalog.RefreshAllPayload {
 
 // NewCatalogErrorPayload builds a catalog service CatalogError endpoint
 // payload.
-func NewCatalogErrorPayload(catalogName string, token string) *catalog.CatalogErrorPayload {
+func NewCatalogErrorPayload(catalogName string) *catalog.CatalogErrorPayload {
 	v := &catalog.CatalogErrorPayload{}
 	v.CatalogName = catalogName
-	v.Token = token
 
 	return v
 }

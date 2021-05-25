@@ -149,14 +149,6 @@ paths:
                 id: 3F1FKVRR
                 message: Value of ID must be an integer
                 name: bad_request
-      security:
-      - jwt_header_Authorization:
-        - rating:read
-        - rating:write
-        - agent:create
-        - catalog:refresh
-        - config:refresh
-        - refresh:token
   /catalog/{catalogName}/refresh:
     post:
       tags:
